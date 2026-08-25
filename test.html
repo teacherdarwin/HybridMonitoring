@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - Faculty Monitoring Console</title>
+  <title>Faculty Class Monitoring Console</title>
   <link rel="icon" type="image/png" href="NCC.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -40,31 +40,31 @@
       <div class="text-center mb-6">
         <div class="inline-flex p-3 rounded-full bg-violet-500/20 mb-3 border border-violet-400/30">
           <svg class="w-8 h-8 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
           </svg>
         </div>
-        <h2 class="text-2xl font-bold tracking-tight">Admin Access Only</h2>
-        <p class="text-xs text-slate-300 mt-1">Authenticate to open the faculty audit console</p>
+        <h2 class="text-2xl font-bold tracking-tight">Faculty Portal</h2>
+        <p class="text-xs text-slate-300 mt-1">Authenticate to access the monitoring console</p>
       </div>
 
       <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Admin Username</label>
-          <input type="text" id="username" required placeholder="Enter admin username" class="glass-input w-full px-4 py-2.5 rounded-lg text-sm transition">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Username</label>
+          <input type="text" id="username" required placeholder="Enter username" class="glass-input w-full px-4 py-2.5 rounded-lg text-sm transition">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Password</label>
           <input type="password" id="password" required placeholder="••••••••" class="glass-input w-full px-4 py-2.5 rounded-lg text-sm transition">
         </div>
-        <p id="loginError" class="text-rose-400 text-xs hidden text-center font-medium">Invalid administrator credentials.</p>
+        <p id="loginError" class="text-rose-400 text-xs hidden text-center font-medium">Invalid username or password.</p>
         <button type="submit" class="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-indigo-500/30 active:scale-[0.98]">
-          Sign In to Admin Dashboard
+          Sign In
         </button>
       </form>
     </div>
   </div>
 
-  <div class="container mx-auto px-4 py-10 max-w-6xl">
+  <div class="container mx-auto px-4 py-10 max-w-5xl">
     
     <header class="glass rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-4">
@@ -72,15 +72,12 @@
           <img src="NCC.png" alt="NCC Logo" class="w-10 h-10 object-contain">
         </div>
         <div>
-          <h1 class="text-xl font-bold">Administrator Monitoring Console</h1>
-          <p class="text-xs text-slate-400">Institutional Faculty Class Verification & Audit</p>
+          <h1 class="text-xl font-bold">Online Class Monitoring Console</h1>
+          <p class="text-xs text-slate-400">Institutional Faculty Verification Portal</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="fetchRemoteRecords()" class="px-3 py-2 glass text-xs font-medium text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20 rounded-lg transition border border-emerald-500/20 flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
+        <button onclick="fetchRemoteRecords()" class="px-3 py-2 glass text-xs font-medium text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20 rounded-lg transition border border-emerald-500/20">
           Refresh Live Data
         </button>
         <button onclick="handleLogout()" class="px-4 py-2 glass text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10">
@@ -89,59 +86,81 @@
       </div>
     </header>
 
-    <section class="glass rounded-2xl p-6 mb-8 border border-white/10">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-        <h2 class="text-base font-bold flex items-center gap-2">
-          <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-          </svg>
-          Filter Submissions
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <section class="glass rounded-2xl p-6 lg:col-span-1 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Submit Proof of Class
         </h2>
-        <button onclick="resetFilters()" class="text-xs text-violet-300 hover:underline">Reset Search Filters</button>
-      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Filter by Faculty Name</label>
-          <input type="text" id="filterName" oninput="applyFilters()" placeholder="Search by instructor name..." class="glass-input w-full px-4 py-2 rounded-lg text-sm">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Filter by Subject</label>
-          <input type="text" id="filterSubject" oninput="applyFilters()" placeholder="Search by course or subject title..." class="glass-input w-full px-4 py-2 rounded-lg text-sm">
-        </div>
-      </div>
-    </section>
+        <form id="submissionForm" onsubmit="handleSubmission(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Faculty Name</label>
+            <input type="text" id="facultyName" required placeholder="e.g., Prof. Fatima Albano" class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
 
-    <section class="glass rounded-2xl p-6 border border-white/10">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold flex items-center gap-2">
-          Faculty Submissions Feed
-          <span class="flex h-2 w-2 relative" title="Auto-refresh active (3s)">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Date</label>
+            <input type="date" id="classDate" required class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Subject / Course</label>
+            <input type="text" id="subjectName" required placeholder="e.g., GEC 3" class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Class Attachment / Proof</label>
+            <input type="file" id="classFile" required class="glass-input w-full px-3 py-2 rounded-lg text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-violet-500/30 file:text-violet-200 hover:file:bg-violet-500/50 cursor-pointer">
+          </div>
+
+          <button type="submit" id="submitBtn" class="w-full mt-2 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-violet-600/30 active:scale-[0.98]">
+            Upload & Sync to Database
+          </button>
+        </form>
+      </section>
+
+      <section class="glass rounded-2xl p-6 lg:col-span-2 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            Submitted Records
+            <span class="flex h-2 w-2 relative" title="Live Auto-Refreshing Enabled">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
           </span>
+          <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-2.5 py-1 rounded-full">Syncing...</span>
         </h2>
-        <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-3 py-1 rounded-full">Syncing...</span>
-      </div>
 
-      <div id="submissionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2">
-        <p id="emptyState" class="col-span-full text-slate-400 text-sm italic text-center py-12">Fetching live submissions from Google Drive...</p>
-      </div>
-    </section>
+        <div id="submissionsContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+          <p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">Fetching live submissions from Database...</p>
+        </div>
+      </section>
 
+    </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXFZPbRxSxiafPt2vZsPZ509RnQ_8kvVMRrMZIzv8pIE4iOxYEQlQzllliTeYEBOfd/exec";
 
-    // ADMIN CREDENTIALS
-    const AUTHORIZED_ADMINS = {
+    const AUTHORIZED_USERS = {
+      "DCA": "110696",
+      "MLB": "MLB2026",
+      "PJP": "PJP2026",
+      "HRL": "HRL2026",
+      "RTC": "RTC2026",
+      "VPN": "VPN2026",
+      "VRD": "VRD2026",
+      "WMN": "WMN2026",
+      "MAP": "MAP2026",
+      "FRS": "FRS2026",
       "FRA": "FRA2026"
     };
 
-    let allFetchedRecords = [];
     let autoRefreshInterval = null;
 
+    document.getElementById('classDate').valueAsDate = new Date();
+    
     document.addEventListener("DOMContentLoaded", () => {
       fetchRemoteRecords();
       startAutoRefresh();
@@ -149,8 +168,8 @@
 
     function startAutoRefresh() {
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-      // Auto-refresh every 3 seconds (3000 ms)
-      autoRefreshInterval = setInterval(fetchRemoteRecords, 3000);
+      // Auto-refresh every 5000 milliseconds (5 seconds)
+      autoRefreshInterval = setInterval(fetchRemoteRecords, 5000);
     }
 
     function handleLogin(e) {
@@ -159,7 +178,7 @@
       const pass = document.getElementById('password').value.trim();
       const errorMsg = document.getElementById('loginError');
 
-      if (AUTHORIZED_ADMINS[user] && AUTHORIZED_ADMINS[user] === pass) {
+      if (AUTHORIZED_USERS[user] && AUTHORIZED_USERS[user] === pass) {
         document.getElementById('loginModal').classList.add('hidden');
         errorMsg.classList.add('hidden');
         document.getElementById('loginForm').reset();
@@ -175,7 +194,58 @@
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     }
 
+    async function handleSubmission(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading to Database...";
+
+      const name = document.getElementById('facultyName').value;
+      const date = document.getElementById('classDate').value;
+      const subject = document.getElementById('subjectName').value;
+      const fileInput = document.getElementById('classFile');
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(event) {
+        const payload = {
+          name: name,
+          date: date,
+          subject: subject,
+          fileName: file.name,
+          mimeType: file.type,
+          file: event.target.result
+        };
+
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          const resData = await response.json();
+
+          if (resData.result === "success") {
+            alert("Successfully uploaded file to Google Drive!");
+            document.getElementById('submissionForm').reset();
+            document.getElementById('classDate').valueAsDate = new Date();
+            fetchRemoteRecords();
+          } else {
+            alert("Error uploading file: " + resData.error);
+          }
+        } catch (err) {
+          alert("Network error while submitting to Google Drive.");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Upload & Sync to Drive";
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
     async function fetchRemoteRecords() {
+      const container = document.getElementById('submissionsContainer');
       const countBadge = document.getElementById('recordCount');
       
       try {
@@ -183,73 +253,47 @@
         const data = await response.json();
 
         if (data.result === "success") {
-          allFetchedRecords = data.records;
-          applyFilters();
+          const records = data.records;
+
+          if (records.length === 0) {
+            container.innerHTML = `<p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">No submissions recorded yet.</p>`;
+            countBadge.textContent = "0 entries";
+            return;
+          }
+
+          container.innerHTML = '';
+          records.forEach(record => {
+            renderRecordCard(record);
+          });
+
+          countBadge.textContent = `${records.length} ${records.length === 1 ? 'entry' : 'entries'}`;
         }
       } catch (err) {
-        const container = document.getElementById('submissionsContainer');
-        container.innerHTML = `<p class="col-span-full text-rose-400 text-xs text-center py-8">Failed to sync records from Google Sheet. Check network connection or SCRIPT_URL configuration.</p>`;
         countBadge.textContent = "Sync error";
       }
-    }
-
-    function applyFilters() {
-      const nameQuery = document.getElementById('filterName').value.toLowerCase().trim();
-      const subjectQuery = document.getElementById('filterSubject').value.toLowerCase().trim();
-      const container = document.getElementById('submissionsContainer');
-      const countBadge = document.getElementById('recordCount');
-
-      const filtered = allFetchedRecords.filter(record => {
-        const matchesName = String(record.name || '').toLowerCase().includes(nameQuery);
-        const matchesSubject = String(record.subject || '').toLowerCase().includes(subjectQuery);
-        return matchesName && matchesSubject;
-      });
-
-      container.innerHTML = '';
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p id="emptyState" class="col-span-full text-slate-400 text-sm italic text-center py-12">No records found matching your current filter criteria.</p>`;
-        countBadge.textContent = "0 entries";
-        return;
-      }
-
-      filtered.forEach(record => {
-        renderRecordCard(record);
-      });
-
-      countBadge.textContent = `${filtered.length} of ${allFetchedRecords.length} entries`;
-    }
-
-    function resetFilters() {
-      document.getElementById('filterName').value = '';
-      document.getElementById('filterSubject').value = '';
-      applyFilters();
     }
 
     function renderRecordCard(record) {
       const container = document.getElementById('submissionsContainer');
       const card = document.createElement('div');
-      card.className = "glass p-4 rounded-xl border border-white/10 flex flex-col justify-between gap-4";
+      card.className = "glass p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between";
 
-      const formattedDate = record.date ? new Date(record.date).toLocaleDateString() : 'N/A';
+      const formattedDate = new Date(record.date).toLocaleDateString();
+      const fileUrl = record.imageSrc || record.fileUrl;
 
       card.innerHTML = `
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-semibold uppercase rounded tracking-wider">Verified Record</span>
-            <span class="text-[11px] text-slate-400">${formattedDate}</span>
-          </div>
-          <div>
-            <h3 class="font-semibold text-base text-white">${record.subject}</h3>
-            <p class="text-xs text-slate-300 mt-1">Faculty: <span class="text-violet-300 font-medium">${record.name}</span></p>
-          </div>
+        <div class="space-y-1">
+          <div class="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-semibold uppercase rounded tracking-wider mb-1">Synced to Drive</div>
+          <h3 class="font-semibold text-sm text-white">${record.subject}</h3>
+          <p class="text-xs text-slate-300">Faculty: <span class="text-violet-300">${record.name}</span></p>
+          <p class="text-[11px] text-slate-400">Date: ${formattedDate}</p>
         </div>
-        <div class="pt-2 border-t border-white/10 flex justify-end">
-          <a href="${record.imageSrc}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/40 hover:bg-violet-600/60 border border-violet-400/30 text-xs rounded-lg text-violet-200 transition">
+        <div class="shrink-0 w-full sm:w-auto">
+          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/40 hover:bg-violet-600/60 border border-violet-400/30 text-xs rounded-lg text-violet-200 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
-            View Drive Screenshot
+            View Drive File
           </a>
         </div>
       `;
