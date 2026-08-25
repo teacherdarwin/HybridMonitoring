@@ -34,7 +34,6 @@
 </head>
 <body class="text-slate-100 font-sans antialiased relative">
 
-  <!-- LOGIN MODAL OVERLAY -->
   <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
     <div class="glass w-full max-w-md rounded-2xl p-8 text-white">
       <div class="text-center mb-6">
@@ -64,10 +63,8 @@
     </div>
   </div>
 
-  <!-- MAIN MONITORING CONSOLE -->
   <div class="container mx-auto px-4 py-10 max-w-5xl">
     
-    <!-- HEADER -->
     <header class="glass rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-4">
         <div class="p-3 bg-indigo-500/20 rounded-xl border border-indigo-400/30">
@@ -92,7 +89,6 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <!-- SUBMISSION FORM -->
       <section class="glass rounded-2xl p-6 lg:col-span-1 border border-white/10">
         <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Submit Proof of Class
@@ -125,10 +121,15 @@
         </form>
       </section>
 
-      <!-- RECENT SUBMISSIONS FEED -->
       <section class="glass rounded-2xl p-6 lg:col-span-2 border border-white/10">
         <h2 class="text-lg font-bold mb-4 flex items-center justify-between">
-          <span>Submitted Records</span>
+          <span class="flex items-center gap-2">
+            Submitted Records
+            <span class="flex h-2 w-2 relative" title="Live Auto-Refreshing Enabled">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </span>
           <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-2.5 py-1 rounded-full">Syncing...</span>
         </h2>
 
@@ -141,10 +142,8 @@
   </div>
 
   <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXFZPbRxSxiafPt2vZsPZ509RnQ_8kvVMRrMZIzv8pIE4iOxYEQlQzllliTeYEBOfd/exec";
 
-    // DEFINE CREDENTIALS HERE
     const AUTHORIZED_USERS = {
       "DCA": "110696",
       "MLB": "MLB2026",
@@ -159,8 +158,20 @@
       "FRA": "FRA2026"
     };
 
+    let autoRefreshInterval = null;
+
     document.getElementById('classDate').valueAsDate = new Date();
-    document.addEventListener("DOMContentLoaded", fetchRemoteRecords);
+    
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchRemoteRecords();
+      startAutoRefresh();
+    });
+
+    function startAutoRefresh() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      // Auto-refresh every 5000 milliseconds (5 seconds)
+      autoRefreshInterval = setInterval(fetchRemoteRecords, 5000);
+    }
 
     function handleLogin(e) {
       e.preventDefault();
@@ -173,6 +184,7 @@
         errorMsg.classList.add('hidden');
         document.getElementById('loginForm').reset();
         fetchRemoteRecords();
+        startAutoRefresh();
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -180,6 +192,7 @@
 
     function handleLogout() {
       document.getElementById('loginModal').classList.remove('hidden');
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     }
 
     async function handleSubmission(e) {
@@ -239,7 +252,6 @@
         const data = await response.json();
 
         if (data.result === "success") {
-          container.innerHTML = '';
           const records = data.records;
 
           if (records.length === 0) {
@@ -248,6 +260,7 @@
             return;
           }
 
+          container.innerHTML = '';
           records.forEach(record => {
             renderRecordCard(record);
           });
@@ -255,7 +268,7 @@
           countBadge.textContent = `${records.length} ${records.length === 1 ? 'entry' : 'entries'}`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-rose-400 text-xs text-center py-8">Failed to sync records from Google Sheet. Check SCRIPT_URL configuration.</p>`;
+        countBadge.textContent = "Sync error";
       }
     }
 
@@ -264,7 +277,6 @@
       const card = document.createElement('div');
       card.className = "glass p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between";
 
-      // Formatted Date string from Google Sheet ISO timestamp
       const formattedDate = new Date(record.date).toLocaleDateString();
 
       card.innerHTML = `
