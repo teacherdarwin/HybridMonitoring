@@ -32,7 +32,7 @@
     }
   </style>
 </head>
-<text class="text-slate-100 font-sans antialiased relative">
+<body class="text-slate-100 font-sans antialiased relative">
 
   <!-- LOGIN MODAL OVERLAY -->
   <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
@@ -80,9 +80,14 @@
           <p class="text-xs text-slate-400">Institutional Faculty Verification Portal</p>
         </div>
       </div>
-      <button onclick="handleLogout()" class="px-4 py-2 glass text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10">
-        Log Out
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick="fetchRemoteRecords()" class="px-3 py-2 glass text-xs font-medium text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20 rounded-lg transition border border-emerald-500/20">
+          Refresh Live Data
+        </button>
+        <button onclick="handleLogout()" class="px-4 py-2 glass text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10">
+          Log Out
+        </button>
+      </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -114,8 +119,8 @@
             <input type="file" id="screenshot" accept="image/*" required class="glass-input w-full px-3 py-2 rounded-lg text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-violet-500/30 file:text-violet-200 hover:file:bg-violet-500/50 cursor-pointer">
           </div>
 
-          <button type="submit" class="w-full mt-2 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-violet-600/30 active:scale-[0.98]">
-            Upload & Verify
+          <button type="submit" id="submitBtn" class="w-full mt-2 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-violet-600/30 active:scale-[0.98]">
+            Upload & Sync to Drive
           </button>
         </form>
       </section>
@@ -124,12 +129,11 @@
       <section class="glass rounded-2xl p-6 lg:col-span-2 border border-white/10">
         <h2 class="text-lg font-bold mb-4 flex items-center justify-between">
           <span>Submitted Records</span>
-          <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-2.5 py-1 rounded-full">0 entries</span>
+          <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-2.5 py-1 rounded-full">Syncing...</span>
         </h2>
 
         <div id="submissionsContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-          <!-- Dynamic entries render here -->
-          <p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">No submissions recorded yet.</p>
+          <p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">Fetching live submissions from Google Drive...</p>
         </div>
       </section>
 
@@ -137,14 +141,17 @@
   </div>
 
   <script>
+    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWS7gbpiFYms8lqk_I9dzqX0xgnr0enwMG7mIAg9hC8bILqtpKazhxqUUFFuiYm0Z4/exec";
+
     // DEFINE CREDENTIALS HERE
     const AUTHORIZED_USERS = {
       "admin": "admin123",
       "faculty": "class2026"
     };
 
-    // Set today's date default
     document.getElementById('classDate').valueAsDate = new Date();
+    document.addEventListener("DOMContentLoaded", fetchRemoteRecords);
 
     function handleLogin(e) {
       e.preventDefault();
@@ -156,6 +163,7 @@
         document.getElementById('loginModal').classList.add('hidden');
         errorMsg.classList.add('hidden');
         document.getElementById('loginForm').reset();
+        fetchRemoteRecords();
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -165,8 +173,11 @@
       document.getElementById('loginModal').classList.remove('hidden');
     }
 
-    function handleSubmission(e) {
+    async function handleSubmission(e) {
       e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading to Drive...";
 
       const name = document.getElementById('facultyName').value;
       const date = document.getElementById('classDate').value;
@@ -177,43 +188,95 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(event) {
-        const imageUrl = event.target.result;
-        addRecordToConsole(name, date, subject, imageUrl);
-        document.getElementById('submissionForm').reset();
-        document.getElementById('classDate').valueAsDate = new Date();
+      reader.onload = async function(event) {
+        const payload = {
+          name: name,
+          date: date,
+          subject: subject,
+          file: event.target.result
+        };
+
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          const resData = await response.json();
+
+          if (resData.result === "success") {
+            alert("Successfully uploaded screenshot to Google Drive!");
+            document.getElementById('submissionForm').reset();
+            document.getElementById('classDate').valueAsDate = new Date();
+            fetchRemoteRecords();
+          } else {
+            alert("Error uploading file: " + resData.error);
+          }
+        } catch (err) {
+          alert("Network error while submitting to Google Drive.");
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Upload & Sync to Drive";
+        }
       };
       reader.readAsDataURL(file);
     }
 
-    function addRecordToConsole(name, date, subject, imageSrc) {
-      const emptyState = document.getElementById('emptyState');
-      if (emptyState) emptyState.remove();
+    async function fetchRemoteRecords() {
+      const container = document.getElementById('submissionsContainer');
+      const countBadge = document.getElementById('recordCount');
+      
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
 
+        if (data.result === "success") {
+          container.innerHTML = '';
+          const records = data.records;
+
+          if (records.length === 0) {
+            container.innerHTML = `<p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">No submissions recorded yet.</p>`;
+            countBadge.textContent = "0 entries";
+            return;
+          }
+
+          records.forEach(record => {
+            renderRecordCard(record);
+          });
+
+          countBadge.textContent = `${records.length} ${records.length === 1 ? 'entry' : 'entries'}`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="text-rose-400 text-xs text-center py-8">Failed to sync records from Google Sheet. Check SCRIPT_URL configuration.</p>`;
+      }
+    }
+
+    function renderRecordCard(record) {
       const container = document.getElementById('submissionsContainer');
       const card = document.createElement('div');
       card.className = "glass p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between";
 
+      // Formatted Date string from Google Sheet ISO timestamp
+      const formattedDate = new Date(record.date).toLocaleDateString();
+
       card.innerHTML = `
         <div class="space-y-1">
-          <div class="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-semibold uppercase rounded tracking-wider mb-1">Verified</div>
-          <h3 class="font-semibold text-sm text-white">${subject}</h3>
-          <p class="text-xs text-slate-300">Faculty: <span class="text-violet-300">${name}</span></p>
-          <p class="text-[11px] text-slate-400">Date: ${date}</p>
+          <div class="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-semibold uppercase rounded tracking-wider mb-1">Synced to Drive</div>
+          <h3 class="font-semibold text-sm text-white">${record.subject}</h3>
+          <p class="text-xs text-slate-300">Faculty: <span class="text-violet-300">${record.name}</span></p>
+          <p class="text-[11px] text-slate-400">Date: ${formattedDate}</p>
         </div>
         <div class="shrink-0 w-full sm:w-auto">
-          <a href="${imageSrc}" target="_blank" title="Click to view full screenshot">
-            <img src="${imageSrc}" alt="Class Screenshot Proof" class="h-20 w-full sm:w-32 object-cover rounded-lg border border-white/20 hover:scale-105 transition duration-200">
+          <a href="${record.imageSrc}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/40 hover:bg-violet-600/60 border border-violet-400/30 text-xs rounded-lg text-violet-200 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            View Drive Image
           </a>
         </div>
       `;
 
-      container.prepend(card);
-
-      const countBadge = document.getElementById('recordCount');
-      const currentCount = container.children.length;
-      countBadge.textContent = `${currentCount} ${currentCount === 1 ? 'entry' : 'entries'}`;
+      container.appendChild(card);
     }
   </script>
-</text>
+</body>
 </html>
