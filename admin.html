@@ -115,7 +115,13 @@
 
     <section class="glass rounded-2xl p-6 border border-white/10">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-bold">Faculty Submissions Feed</h2>
+        <h2 class="text-lg font-bold flex items-center gap-2">
+          Faculty Submissions Feed
+          <span class="flex h-2 w-2 relative" title="Auto-refresh active (3s)">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </h2>
         <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-3 py-1 rounded-full">Syncing...</span>
       </div>
 
@@ -131,12 +137,22 @@
 
     // ADMIN CREDENTIALS
     const AUTHORIZED_ADMINS = {
-      "admin": "admin123"
+      "FRA": "FRA2026"
     };
 
     let allFetchedRecords = [];
+    let autoRefreshInterval = null;
 
-    document.addEventListener("DOMContentLoaded", fetchRemoteRecords);
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchRemoteRecords();
+      startAutoRefresh();
+    });
+
+    function startAutoRefresh() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      // Auto-refresh every 3 seconds (3000 ms)
+      autoRefreshInterval = setInterval(fetchRemoteRecords, 3000);
+    }
 
     function handleLogin(e) {
       e.preventDefault();
@@ -149,6 +165,7 @@
         errorMsg.classList.add('hidden');
         document.getElementById('loginForm').reset();
         fetchRemoteRecords();
+        startAutoRefresh();
       } else {
         errorMsg.classList.remove('hidden');
       }
@@ -156,10 +173,10 @@
 
     function handleLogout() {
       document.getElementById('loginModal').classList.remove('hidden');
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     }
 
     async function fetchRemoteRecords() {
-      const container = document.getElementById('submissionsContainer');
       const countBadge = document.getElementById('recordCount');
       
       try {
@@ -171,6 +188,7 @@
           applyFilters();
         }
       } catch (err) {
+        const container = document.getElementById('submissionsContainer');
         container.innerHTML = `<p class="col-span-full text-rose-400 text-xs text-center py-8">Failed to sync records from Google Sheet. Check network connection or SCRIPT_URL configuration.</p>`;
         countBadge.textContent = "Sync error";
       }
