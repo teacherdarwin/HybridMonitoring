@@ -118,6 +118,9 @@
           <button type="submit" id="submitBtn" class="w-full mt-2 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-violet-600/30 active:scale-[0.98]">
             Upload & Sync to Database
           </button>
+
+          <!-- Non-intrusive status notification element -->
+          <p id="uploadStatus" class="text-xs text-center font-medium mt-2 hidden transition-all duration-300"></p>
         </form>
       </section>
 
@@ -169,7 +172,6 @@
 
     function startAutoRefresh() {
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-      // Auto-refresh every 5000 milliseconds (5 seconds)
       autoRefreshInterval = setInterval(fetchRemoteRecords, 5000);
     }
 
@@ -195,6 +197,19 @@
       if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     }
 
+    function showStatusMessage(text, isError = false) {
+      const statusMsg = document.getElementById('uploadStatus');
+      statusMsg.textContent = text;
+      statusMsg.className = `text-xs text-center font-medium mt-2 block ${
+        isError ? 'text-rose-400' : 'text-emerald-400'
+      }`;
+
+      // Automatically hide status message after 4 seconds
+      setTimeout(() => {
+        statusMsg.className = "text-xs text-center font-medium mt-2 hidden";
+      }, 4000);
+    }
+
     async function handleSubmission(e) {
       e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
@@ -207,7 +222,11 @@
       const fileInput = document.getElementById('classFile');
       const file = fileInput.files[0];
 
-      if (!file) return;
+      if (!file) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload & Sync to Database";
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = async function(event) {
@@ -228,18 +247,18 @@
           const resData = await response.json();
 
           if (resData.result === "success") {
-            alert("Successfully uploaded file to Google Drive!");
+            showStatusMessage("Successfully uploaded file to the Database!", false);
             document.getElementById('submissionForm').reset();
             document.getElementById('classDate').valueAsDate = new Date();
             fetchRemoteRecords();
           } else {
-            alert("Error uploading file: " + resData.error);
+            showStatusMessage("Error uploading file: " + resData.error, true);
           }
         } catch (err) {
-          alert("Network error while submitting to Google Drive.");
+          showStatusMessage("Network error while submitting to the Database.", true);
         } finally {
           submitBtn.disabled = false;
-          submitBtn.textContent = "Upload & Sync to Drive";
+          submitBtn.textContent = "Upload & Sync to Database";
         }
       };
       reader.readAsDataURL(file);
