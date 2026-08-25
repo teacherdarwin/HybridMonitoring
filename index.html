@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Class Monitoring Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(167, 139, 250, 0.6);
+      outline: none;
+    }
+    .glass-input::placeholder {
+      color: rgba(203, 213, 225, 0.6);
+    }
+  </style>
+</head>
+<text class="text-slate-100 font-sans antialiased relative">
+
+  <!-- LOGIN MODAL OVERLAY -->
+  <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+    <div class="glass w-full max-w-md rounded-2xl p-8 text-white">
+      <div class="text-center mb-6">
+        <div class="inline-flex p-3 rounded-full bg-violet-500/20 mb-3 border border-violet-400/30">
+          <svg class="w-8 h-8 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold tracking-tight">Faculty Portal</h2>
+        <p class="text-xs text-slate-300 mt-1">Authenticate to access the monitoring console</p>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Username</label>
+          <input type="text" id="username" required placeholder="Enter username" class="glass-input w-full px-4 py-2.5 rounded-lg text-sm transition">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Password</label>
+          <input type="password" id="password" required placeholder="••••••••" class="glass-input w-full px-4 py-2.5 rounded-lg text-sm transition">
+        </div>
+        <p id="loginError" class="text-rose-400 text-xs hidden text-center font-medium">Invalid username or password.</p>
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-indigo-500/30 active:scale-[0.98]">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN MONITORING CONSOLE -->
+  <div class="container mx-auto px-4 py-10 max-w-5xl">
+    
+    <!-- HEADER -->
+    <header class="glass rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-indigo-500/20 rounded-xl border border-indigo-400/30">
+          <svg class="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">Online Class Monitoring Console</h1>
+          <p class="text-xs text-slate-400">Institutional Faculty Verification Portal</p>
+        </div>
+      </div>
+      <button onclick="handleLogout()" class="px-4 py-2 glass text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition border border-white/10">
+        Log Out
+      </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- SUBMISSION FORM -->
+      <section class="glass rounded-2xl p-6 lg:col-span-1 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Submit Proof of Class
+        </h2>
+
+        <form id="submissionForm" onsubmit="handleSubmission(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Faculty Name</label>
+            <input type="text" id="facultyName" required placeholder="e.g., Prof. Jane Doe" class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Date</label>
+            <input type="date" id="classDate" required class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Subject / Course</label>
+            <input type="text" id="subjectName" required placeholder="e.g., MATH 101 - Calculus" class="glass-input w-full px-3 py-2 rounded-lg text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Class Screenshot</label>
+            <input type="file" id="screenshot" accept="image/*" required class="glass-input w-full px-3 py-2 rounded-lg text-xs file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-violet-500/30 file:text-violet-200 hover:file:bg-violet-500/50 cursor-pointer">
+          </div>
+
+          <button type="submit" class="w-full mt-2 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg text-sm transition shadow-lg shadow-violet-600/30 active:scale-[0.98]">
+            Upload & Verify
+          </button>
+        </form>
+      </section>
+
+      <!-- RECENT SUBMISSIONS FEED -->
+      <section class="glass rounded-2xl p-6 lg:col-span-2 border border-white/10">
+        <h2 class="text-lg font-bold mb-4 flex items-center justify-between">
+          <span>Submitted Records</span>
+          <span id="recordCount" class="text-xs bg-violet-500/20 text-violet-300 border border-violet-400/30 px-2.5 py-1 rounded-full">0 entries</span>
+        </h2>
+
+        <div id="submissionsContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+          <!-- Dynamic entries render here -->
+          <p id="emptyState" class="text-slate-400 text-sm italic text-center py-12">No submissions recorded yet.</p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // DEFINE CREDENTIALS HERE
+    const AUTHORIZED_USERS = {
+      "admin": "admin123",
+      "faculty": "class2026"
+    };
+
+    // Set today's date default
+    document.getElementById('classDate').valueAsDate = new Date();
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      const errorMsg = document.getElementById('loginError');
+
+      if (AUTHORIZED_USERS[user] && AUTHORIZED_USERS[user] === pass) {
+        document.getElementById('loginModal').classList.add('hidden');
+        errorMsg.classList.add('hidden');
+        document.getElementById('loginForm').reset();
+      } else {
+        errorMsg.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function handleSubmission(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('facultyName').value;
+      const date = document.getElementById('classDate').value;
+      const subject = document.getElementById('subjectName').value;
+      const fileInput = document.getElementById('screenshot');
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageUrl = event.target.result;
+        addRecordToConsole(name, date, subject, imageUrl);
+        document.getElementById('submissionForm').reset();
+        document.getElementById('classDate').valueAsDate = new Date();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addRecordToConsole(name, date, subject, imageSrc) {
+      const emptyState = document.getElementById('emptyState');
+      if (emptyState) emptyState.remove();
+
+      const container = document.getElementById('submissionsContainer');
+      const card = document.createElement('div');
+      card.className = "glass p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between";
+
+      card.innerHTML = `
+        <div class="space-y-1">
+          <div class="inline-block px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-semibold uppercase rounded tracking-wider mb-1">Verified</div>
+          <h3 class="font-semibold text-sm text-white">${subject}</h3>
+          <p class="text-xs text-slate-300">Faculty: <span class="text-violet-300">${name}</span></p>
+          <p class="text-[11px] text-slate-400">Date: ${date}</p>
+        </div>
+        <div class="shrink-0 w-full sm:w-auto">
+          <a href="${imageSrc}" target="_blank" title="Click to view full screenshot">
+            <img src="${imageSrc}" alt="Class Screenshot Proof" class="h-20 w-full sm:w-32 object-cover rounded-lg border border-white/20 hover:scale-105 transition duration-200">
+          </a>
+        </div>
+      `;
+
+      container.prepend(card);
+
+      const countBadge = document.getElementById('recordCount');
+      const currentCount = container.children.length;
+      countBadge.textContent = `${currentCount} ${currentCount === 1 ? 'entry' : 'entries'}`;
+    }
+  </script>
+</text>
+</html>
